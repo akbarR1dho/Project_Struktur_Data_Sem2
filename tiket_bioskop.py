@@ -7,9 +7,9 @@ import random
 film = ["Janur Ireng", "KKN di Desa Ayak", "Ambacong"]
 
 jam_tayang = [
-    ["10:00", "12:00"], 
-    ["11:00", "13:00"], 
-    ["12:00", "15:00"]
+    ["10:00", "22:00"], 
+    ["11:00", "16:00"], 
+    ["12:00", "17:00"]
 ]
 
 kursi = [
@@ -215,12 +215,21 @@ class Window1(tk.Frame):
                 try: lbl.configure(bg=new_bg)
                 except: pass
 
-        # Update Jam Tayang Options
-        self.combo_jam.configure(state="readonly")
-        self.combo_jam['values'] = jam_tayang[index]
-        self.combo_jam.current(0)
+        # FILTER JAM TAYANG
+        waktu_sekarang = datetime.now().strftime("%H:%M")
+        jadwal_tersedia = []
+        
+        # Mengecek satu per satu jam pada film yang dipilih
+        for jam in jam_tayang[index]:
+            if jam > waktu_sekarang:  # Hanya ambil jam yang belum terlewat
+                jadwal_tersedia.append(jam)
+            else:
+                jadwal_tersedia.append(f"{jam} (Habis)")
 
-        # Update status & aktifkan tombol
+        self.combo_jam.configure(state="readonly")
+        self.combo_jam['values'] = jadwal_tersedia
+        self.combo_jam.current(0)
+        
         self.lbl_status.configure(text=f"● {film[index]}", fg=GREEN)
         self.btn_lanjut.configure(state="normal", bg=RED, fg=WHITE, cursor="hand2")
 
@@ -232,6 +241,11 @@ class Window1(tk.Frame):
         self.app.idx_jam = self.combo_jam.current()
         if self.app.idx_jam == -1:
             messagebox.showwarning("Peringatan", "Pilih jam tayang terlebih dahulu!")
+            return
+
+        jam_pilihan = self.combo_jam.get()
+        if "Habis" in jam_pilihan:
+            messagebox.showwarning("Peringatan", "Jam tayang sudah habis! Pilih jam lain.")
             return
 
         self.app.selected_kursi = [] # Bersihkan pilihan kursi saat berpindah ke W2
